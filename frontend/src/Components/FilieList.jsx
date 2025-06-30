@@ -2,37 +2,46 @@ import { useState, useEffect } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import API from '../api/api';
 
-function FileList({refreshFlag}) {
+function FileList({ refreshFlag, selectedFolder }) {
   const [files, setFiles] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
   const fetchFiles = async () => {
     try {
-        const nextPage = page; // capture current page
-        const res = await API.get(`files/?page=${nextPage}`);
-        console.log(res.data.results);
-        
-        if (res.data.results) {
-        setFiles((prev) => {
-                const newFiles = res.data.results.filter(file => !prev.some(f => f.id === file.id));
-                return [...prev, ...newFiles];
-                });
-        }
+      const nextPage = page;
+      let url = `files/?page=${nextPage}`;
+      if (selectedFolder) {
+        url += `&folder=${selectedFolder}`;
+      }
 
-        if (res.data.next) {
-        setPage(nextPage + 1); // update page only if there is more
-        } else {
+      const res = await API.get(url);
+      const newResults = res.data.results || [];
+
+      setFiles((prev) => {
+        const newFiles = newResults.filter(
+          (file) => !prev.some((f) => f.id === file.id)
+        );
+        return [...prev, ...newFiles];
+      });
+
+      if (res.data.next) {
+        setPage(nextPage + 1);
+      } else {
         setHasMore(false);
-        }
+      }
     } catch (err) {
-        console.error('Failed to fetch files:', err);
+      console.error('Failed to fetch files:', err);
     }
-    };
+  };
 
+  // Reset list when folder or refreshFlag changes
   useEffect(() => {
-    fetchFiles(); // initial load
-  }, [refreshFlag]);
+    setFiles([]);
+    setPage(1);
+    setHasMore(true);
+    fetchFiles(); // re-fetch when folder or refreshFlag changes
+  }, [refreshFlag, selectedFolder]);
 
   const handleDelete = async (id) => {
     try {
@@ -46,6 +55,7 @@ function FileList({refreshFlag}) {
   const handleDownload = (path) => {
     window.open(`${path}`, '_blank');
   };
+
   return (
     <div className="p-4">
       <h2 className="text-xl font-semibold mb-4">My Files</h2>
@@ -58,13 +68,22 @@ function FileList({refreshFlag}) {
       >
         <ul className="space-y-2">
           {files.map((file) => (
-            <li key={file.id} className="border p-3 rounded flex justify-between items-center">
+            <li
+              key={file.id}
+              className="border p-3 rounded flex justify-between items-center"
+            >
               <span>{file.original_name || file.file}</span>
               <div className="space-x-2">
-                <button onClick={() => handleDownload(file.file)} className="text-blue-600 hover:underline">
+                <button
+                  onClick={() => handleDownload(file.file)}
+                  className="text-blue-600 hover:underline"
+                >
                   Download
                 </button>
-                <button onClick={() => handleDelete(file.id)} className="text-red-600 hover:underline">
+                <button
+                  onClick={() => handleDelete(file.id)}
+                  className="text-red-600 hover:underline"
+                >
                   Delete
                 </button>
               </div>

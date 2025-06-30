@@ -1,69 +1,81 @@
 import FileList from './FilieList';
 import FileUpload from './FileUpload';
+import CreateFolder from './CreateFolder';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 function Dashboard() {
   const navigate = useNavigate();
-    const [refreshFlag, setRefreshFlag] = useState(false);
+  const [refreshFlag, setRefreshFlag] = useState(false);
+  const [selectedFolderId, setSelectedFolderId] = useState(""); 
+
   const handleLogout = () => {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
     navigate("/login");
   };
+
   const handleRefresh = () => {
-    setRefreshFlag((prev) => !prev); 
+    setRefreshFlag((prev) => !prev);
   };
+
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">📂 My Drive</h1>
+    <div className="min-h-screen bg-white text-gray-800">
+      {/* Top Navbar */}
+      <header className="flex justify-between items-center px-6 py-4 border-b shadow-sm bg-white sticky top-0 z-10">
+        <h1 className="text-2xl font-bold tracking-tight">📁 MyDrive</h1>
         <button
           onClick={handleLogout}
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+          className="bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded transition"
         >
           Logout
         </button>
-      </div>
+      </header>
 
-      {/* Upload Section */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-700">Upload Files</h2>
-          {/* Scroll to upload area if needed */}
-          <button
-            onClick={() => document.getElementById("upload-area")?.scrollIntoView({ behavior: "smooth" })}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-          >
-            Add File
-          </button>
-        </div>
-        <div id="upload-area" className="mt-4">
-          <FileUpload onUploadSuccess={handleRefresh}/>
-        </div>
-      </div>
-
-      {/* Categories (Placeholder UI) */}
-      <div className="mb-6">
-        <h2 className="text-lg font-medium text-gray-700 mb-2">Categories</h2>
-        <div className="flex flex-wrap gap-2">
-          {["Images", "Documents", "Videos", "Others"].map((cat) => (
-            <span
-              key={cat}
-              className="px-3 py-1 bg-gray-200 rounded-full text-sm text-gray-700 cursor-pointer hover:bg-gray-300 transition"
+      {/* Main Content Area */}
+      <main className="px-6 py-8 max-w-6xl mx-auto">
+        {/* Upload Section */}
+        <section className="mb-10">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Upload New Files</h2>
+            <button
+              onClick={() =>
+                document.getElementById("upload-area")?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow-sm transition"
             >
-              {cat}
-            </span>
-          ))}
-        </div>
-      </div>
+              + Add File
+            </button>
+          </div>
+          <div id="upload-area" className="bg-gray-50 border border-dashed border-gray-300 p-6 rounded-lg shadow-sm">
+            <CreateFolder onFolderCreated={handleRefresh} />
+            <FileUpload onUploadSuccess={handleRefresh} />
+          </div>
+        </section>
 
-      {/* File List */}
-      <div>
-        <h2 className="text-xl font-semibold text-gray-700 mb-2">Your Files</h2>
-        <FileList refreshFlag={refreshFlag}/>
-      </div>
+        {/* Categories - Optional UI */}
+        <section className="mb-10">
+          <h2 className="text-lg font-semibold mb-3">Browse by Category</h2>
+          <div className="flex flex-wrap gap-3">
+            {["Images", "Documents", "Videos", "Others"].map((cat) => (
+              <span
+                key={cat}
+                className="px-4 py-1.5 bg-gray-200 text-gray-700 text-sm font-medium rounded-full hover:bg-gray-300 cursor-pointer transition"
+              >
+                {cat}
+              </span>
+            ))}
+          </div>
+        </section>
+
+        {/* File List */}
+        <section>
+          <h2 className="text-xl font-semibold mb-4">Your Files</h2>
+          <div className="bg-white rounded-lg shadow-md p-4 border border-gray-100">
+            <FileList refreshFlag={refreshFlag} selectedFolder={selectedFolderId} />
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
