@@ -9,7 +9,7 @@ class UserFileViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = UserFile.objects.filter(user=self.request.user)
-        folder_id = self.request.query_params.get('folder')  # ← check if folder filter is passed
+        folder_id = self.request.query_params.get('folder')
         if folder_id:
             queryset = queryset.filter(folder_id=folder_id)
         return queryset
@@ -22,9 +22,7 @@ class FolderViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Only return folders owned by the authenticated user
         return Folder.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        # Automatically set the folder's user to the authenticated user
         serializer.save(user=self.request.user)

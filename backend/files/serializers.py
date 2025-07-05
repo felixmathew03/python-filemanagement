@@ -19,5 +19,5 @@ class UserFileSerializer(serializers.ModelSerializer):
         validated_data['original_name'] = file.name
         return super().create(validated_data)
     def update(self, instance, validated_data):
-        validated_data.pop('user', None)  # prevent user from being updated
+        validated_data.pop('user', None)  
         return super().update(instance, validated_data)
